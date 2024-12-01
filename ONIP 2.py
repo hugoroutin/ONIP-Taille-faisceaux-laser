@@ -7,6 +7,8 @@ Created on Sun Dec  1 15:37:07 2024
 import csv
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
+
 
 z = []
 nom = []
@@ -109,67 +111,93 @@ print('[x_barycentre, y_barycentre]=',get_bary_x_y('Profil1.tif'))
 print('Intensité max=',get_max_min('Profil1.tif')[0])
 print('Intensité min=',get_max_min('Profil1.tif')[1])
 
+
+
 def tracer_droites_bary(nom_fichier):
     """
     Trace les droites passant par le barycentre d'intensité sur une image.
     
-    :param nom du fichier à utiliser
+    :param nom_fichier: Nom du fichier à utiliser
+    :param dossier: Dossier contenant le fichier image
     """
-    chemin_image=os.path.join(dossier, nom_fichier)
+    chemin_image = os.path.join(dossier, nom_fichier)
+    image_pil = Image.open(chemin_image)
+    image_pil = image_pil.convert('L')  # Convertir en niveaux de gris
+    image = np.array(image_pil)  # Convertir en tableau numpy pour OpenCV
     
-    # Charger l'image en niveaux de gris
-    image = cv2.imread(chemin_image, cv2.IMREAD_GRAYSCALE)
-    hauteur,largeur=image.shape
+    hauteur, largeur = image.shape
     
-    bary_list=get_bary_x_y(nom_fichier)
-    [x_barycentre, y_barycentre]=[int(bary_list[0]),int(bary_list[1])]
-    
-    
+    # Obtenir les coordonnées du barycentre
+    bary_list = get_bary_x_y(nom_fichier)
+    x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
     
     # Convertir en image couleur pour tracer les lignes
     image_couleur = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     
     # Tracer les lignes sur l'image
     couleur_ligne = (0, 0, 255)  # Rouge pour les lignes
-    epaisseur = 2
+    epaisseur = 1
     # Ligne verticale (x = x_barycentre)
     cv2.line(image_couleur, (x_barycentre, 0), (x_barycentre, hauteur - 1), couleur_ligne, epaisseur)
     # Ligne horizontale (y = y_barycentre)
     cv2.line(image_couleur, (0, y_barycentre), (largeur - 1, y_barycentre), couleur_ligne, epaisseur)
     
-    # Dessiner un cercle au barycentre
-    cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
+    # # Dessiner un cercle au barycentre
+    # cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
     
-    
-    image1 =cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    # Créer une copie de l'image originale en couleur pour la superposition
+    image1 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     image2 = image_couleur
-    alpha=0.80
-    if image1 is None or image2 is None:
-        raise FileNotFoundError("Une ou plusieurs images n'ont pas pu être chargées.")
     
-    # Vérifier si les dimensions des images correspondent
-    if image1.shape != image2.shape:
-        print(f"Redimensionnement : {image1.shape} -> {image2.shape}")
-        image2 = cv2.resize(image2, (image1.shape[1], image1.shape[0]))  # Adapter image2 à image1
-    
-    # Superposer les images
-    beta = 1 - alpha  # Coefficient de l'image 2
-    image_superposee = cv2.addWeighted(image1, alpha*100, image2, beta/100, 0)
-    
-    # Afficher l'image superposée
-    cv2.imshow("Image Superposée", image_superposee)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # # Vérifier si les dimensions des images correspondent
+    # if image1.shape != image2.shape:
+    #     image2 = cv2.resize(image2, (image1.shape[1], image1.shape[0]))  # Adapter image2 à image1
     
     
     
+    # Afficher les deux images avant de superposer
+    cv2.imshow("Image Originale", image1)
+    cv2.imshow("Image avec Droites", image2)
+    cv2.waitKey(0)  # Attendre une touche pour fermer
     
-    # # Afficher l'image
-    # cv2.imshow("Image avec barycentre et droites", image_couleur)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    
 
-tracer_droites_bary('Profil1.tif')
+#tracer_droites_bary('Profil1.tif')
+
+def tracer_profil_faisceau(nom_fichier):
+    chemin_image=os.path.join(dossier, nom_fichier)
+    
+    # Conversion éventuelle en niveaux de gris
+    image = Image.open(chemin_image).convert("L")
+    
+    # conversion de l'image en tableau numpy
+    image_array = np.array(image, dtype=np.float64)
+    bary_list = get_bary_x_y(nom_fichier)
+    x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
+    array_max_x=image_array[x_barycentre]
+    array_max_y=image_array[y_barycentre]
+    
+    x = np.linspace(0, len(array_max_x), len(array_max_x))
+    
+    plt.plot(x, array_max_x, label='Intensité selon laxe x', color='b')
+    #plt.title('Graphique Sinus')
+    plt.title('Intensité selon  laxe x')
+    plt.ylabel('Intensité')
+    plt.legend()
+    plt.show()
+    
+    y = np.linspace(0, len(array_max_y), len(array_max_y))
+    
+    plt.plot(y, array_max_y, label='Intensité selon laxe y', color='r')
+    plt.title('Intensité selon  laxe y')
+    
+    plt.ylabel('Intensité')
+    plt.legend()
+
+    plt.show()
+
+
+#tracer_profil_faisceau('Profil1.tif')
 
 
 
