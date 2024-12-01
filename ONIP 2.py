@@ -8,7 +8,8 @@ import csv
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-
+from PIL import Image  
+import os  
 
 z = []
 nom = []
@@ -29,8 +30,7 @@ with open('data.csv', 'r') as f:
 # 2 OUVERTURE DE Profil1.tif 
 #################
 
-from PIL import Image  
-import os  
+
 
 
 dossier = r"C:\Users\routi\OneDrive\Documents\GitHub\ONIP-2\Profils_sans_bruit"  #dossier du fichier
@@ -118,7 +118,7 @@ def tracer_droites_bary(nom_fichier):
     Trace les droites passant par le barycentre d'intensité sur une image.
     
     :param nom_fichier: Nom du fichier à utiliser
-    :param dossier: Dossier contenant le fichier image
+    
     """
     chemin_image = os.path.join(dossier, nom_fichier)
     image_pil = Image.open(chemin_image)
@@ -148,12 +148,6 @@ def tracer_droites_bary(nom_fichier):
     # Créer une copie de l'image originale en couleur pour la superposition
     image1 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     image2 = image_couleur
-    
-    # # Vérifier si les dimensions des images correspondent
-    # if image1.shape != image2.shape:
-    #     image2 = cv2.resize(image2, (image1.shape[1], image1.shape[0]))  # Adapter image2 à image1
-    
-    
     
     # Afficher les deux images avant de superposer
     cv2.imshow("Image Originale", image1)
