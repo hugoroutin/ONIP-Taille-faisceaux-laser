@@ -199,6 +199,13 @@ def tracer_profil_faisceau(nom_fichier):
 
 #tracer_profil_faisceau('Profil1.tif')
 
+def gaussienne(A,B,x0,w,x):
+    return A+B*np.exp(-2*(x-x0)/(w*w))
+
+
+
+
+
 
 
 
