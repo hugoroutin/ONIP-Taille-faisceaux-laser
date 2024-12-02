@@ -26,7 +26,7 @@ with open('data.csv', 'r') as f:
  '''      
 
 
-
+#
 #
 #################
 # 2 OUVERTURE DE Profil1.tif 
