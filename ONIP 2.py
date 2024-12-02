@@ -2,7 +2,7 @@
 """
 Created on Sun Dec  1 15:37:07 2024
 
-@author: routi
+@author: routin
 """
 import csv
 import numpy as np
@@ -10,6 +10,12 @@ import cv2
 import matplotlib.pyplot as plt
 from PIL import Image  
 import os  
+import scipy
+
+utilisateur='Ariane'
+utilisateur='Hugo'
+
+
 
 z = []
 nom = []
@@ -33,9 +39,12 @@ with open('data.csv', 'r') as f:
 #################
 
 
+if utilisateur=='Ariane':
+    dossier=r"copie ici le chemin "
+else:
+    dossier=r"C:\Users\routi\OneDrive\Documents\GitHub\ONIP-2\Profils_sans_bruit"
 
 
-dossier = r"C:\Users\routi\OneDrive\Documents\GitHub\ONIP-2\Profils_sans_bruit"  #dossier du fichier
 nom_fichier = "Profil1.tif"  # nom du fichier
 
 
@@ -158,7 +167,7 @@ def tracer_droites_bary(nom_fichier):
     
     
 
-#tracer_droites_bary('Profil1.tif')
+#tracer_droites_bary('Profil2.tif')
 
 def tracer_profil_faisceau(nom_fichier):
     chemin_image=os.path.join(dossier, nom_fichier)
@@ -170,40 +179,69 @@ def tracer_profil_faisceau(nom_fichier):
     image_array = np.array(image, dtype=np.float64)
     bary_list = get_bary_x_y(nom_fichier)
     x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
-    array_max_x=image_array[x_barycentre]
-    array_max_y=image_array[y_barycentre]
+    
+    array_max_x=image_array[:,x_barycentre]
+    
+    array_max_y=image_array[ y_barycentre,:]
     
     x = np.linspace(0, len(array_max_x), len(array_max_x))
-    
+    plt.subplot(2, 1,1)
     plt.plot(x, array_max_x, label='Intensité selon laxe x', color='b')
     #plt.title('Graphique Sinus')
     plt.title('Intensité selon  laxe x')
     plt.ylabel('Intensité')
     plt.legend()
-    plt.show()
+    #plt.show()
     
     y = np.linspace(0, len(array_max_y), len(array_max_y))
-    
+    plt.subplot(2,1,2)
     plt.plot(y, array_max_y, label='Intensité selon laxe y', color='r')
     plt.title('Intensité selon  laxe y')
     
     plt.ylabel('Intensité')
     plt.legend()
+    plt.tight_layout()
 
     plt.show()
 
 
 #tracer_profil_faisceau('Profil1.tif')
 
-def gaussienne(A,B,x0,w,x):
-    return A+B*np.exp(-2*(x-x0)/(w*w))
+def gaussienne(x,A,B,x0,w):
+    return A+B*np.exp(-2*((x-x0)*(x-x0))/(w*w))
+x=np.linspace(-100,100,1000)
+#♣print(gaussienne(1, 1, 50, 1, x))
+
+plt.plot(x, gaussienne(1, 1, 0, 100, x), label='gaussienne', color='b')
+#plt.title('Graphique Sinus')
+plt.title('Intensité selon  laxe x')
+plt.ylabel('Intensité')
+plt.legend()
+plt.show()
 
 
+def fit_gaussien(p0):
+    
+    
+    chemin_image=os.path.join(dossier, nom_fichier)
+    
+    # Conversion éventuelle en niveaux de gris
+    image = Image.open(chemin_image).convert("L")
+    
+    # conversion de l'image en tableau numpy
+    image_array = np.array(image, dtype=np.float64)
+    bary_list = get_bary_x_y(nom_fichier)
+    x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
+    
+    array_max_x=image_array[:,x_barycentre]
+    
+    array_max_y=image_array[ y_barycentre,:]
+    
+    x = np.linspace(0, len(array_max_x), len(array_max_x))
+    y = np.linspace(0, len(array_max_y), len(array_max_y))
+    params, covariance = scipy.optimize.curve_fit(gaussienne, x, array_max_x, p0=p0)
+    return params, covariance
 
 
-
-
-
-
-
+print(fit_gaussien([1,1,0,1]))
 
