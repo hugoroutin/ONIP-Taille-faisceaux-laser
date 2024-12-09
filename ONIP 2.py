@@ -284,4 +284,34 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     plt.show()
 
 
+<<<<<<< HEAD
 tracer_profil_faisceau_avec_fit('Profil1.tif')
+=======
+print(fit_gaussien([1,1,0,1]))
+
+"""Automatisation du processus"""
+
+for k in range 15 : 
+    Donnees={}
+    nom_fichier =f"Profil{k}.tif"
+    print get_bary_x_y(nom_fichier)
+    print get_max_min(nom_fichier)
+    print tracer_droites_bary(nom_fichier)
+    print tracer_profil_faisceau(nom_fichier)
+    print fit_gaussien(p0)
+    Donnees[Profil{k}]=[wx,wy]
+    
+def rayon(w0,M,z,lambda):
+    r=w0*np.sqrt(1+((M*lambda*z)/(np.pi*w0**2))**2)
+    return r 
+
+z=np.linspace(0,100,1000) #La valeur donnée dans le document csv nous donnne l'emplacement de la fin du waist ?
+
+
+plt.plot(z, rayon(), label='rayon', color='b')
+#plt.title('Graphique Sinus')
+plt.title('Rayon selon la position z')
+plt.ylabel('waist')
+plt.legend()
+plt.show()
+>>>>>>> 3135ccc642382a5e1f39e773bd3181b1f60ad8df
