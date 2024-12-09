@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from PIL import Image  
 import os  
 import scipy
+from scipy.optimize import curve_fit
 
 utilisateur='Ariane'
 utilisateur='Hugo'
@@ -118,9 +119,9 @@ def get_max_min(nom_fichier):
     
     return [max_int, min_int]
 
-print('[x_barycentre, y_barycentre]=',get_bary_x_y('Profil1.tif'))
-print('Intensité max=',get_max_min('Profil1.tif')[0])
-print('Intensité min=',get_max_min('Profil1.tif')[1])
+# print('[x_barycentre, y_barycentre]=',get_bary_x_y('Profil1.tif'))
+# print('Intensité max=',get_max_min('Profil1.tif')[0])
+# print('Intensité min=',get_max_min('Profil1.tif')[1])
 
 
 
@@ -154,7 +155,8 @@ def tracer_droites_bary(nom_fichier):
     cv2.line(image_couleur, (0, y_barycentre), (largeur - 1, y_barycentre), couleur_ligne, epaisseur)
     
     # # Dessiner un cercle au barycentre
-    # cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
+    #maxmin=get_max_min(nom_fichier)
+    #cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
     
     # Créer une copie de l'image originale en couleur pour la superposition
     image1 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -205,43 +207,81 @@ def tracer_profil_faisceau(nom_fichier):
     plt.show()
 
 
-#tracer_profil_faisceau('Profil1.tif')
-
-def gaussienne(x,A,B,x0,w):
-    return A+B*np.exp(-2*((x-x0)*(x-x0))/(w*w))
-x=np.linspace(-100,100,1000)
-#♣print(gaussienne(1, 1, 50, 1, x))
-
-plt.plot(x, gaussienne(1, 1, 0, 100, x), label='gaussienne', color='b')
-#plt.title('Graphique Sinus')
-plt.title('Intensité selon  laxe x')
-plt.ylabel('Intensité')
-plt.legend()
-plt.show()
 
 
-def fit_gaussien(p0):
-    
-    
-    chemin_image=os.path.join(dossier, nom_fichier)
-    
-    # Conversion éventuelle en niveaux de gris
+
+def gaussienne(x, A, B, x0, omega):
+    """
+    Fonction gaussienne adaptée au traçage.
+    """
+    return A + B * np.exp(-2 * ((x - x0)**2) / omega**2)
+
+def fit_gaussien(nom_fichier, p0):
+    chemin_image = os.path.join(dossier, nom_fichier)
     image = Image.open(chemin_image).convert("L")
-    
-    # conversion de l'image en tableau numpy
     image_array = np.array(image, dtype=np.float64)
-    bary_list = get_bary_x_y(nom_fichier)
+
+    # Simuler les coordonnées du barycentre si get_bary_x_y est indisponible
+    bary_list = [image_array.shape[1] // 2, image_array.shape[0] // 2]
     x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
-    
-    array_max_x=image_array[:,x_barycentre]
-    
-    array_max_y=image_array[ y_barycentre,:]
-    
-    x = np.linspace(0, len(array_max_x), len(array_max_x))
-    y = np.linspace(0, len(array_max_y), len(array_max_y))
-    params, covariance = scipy.optimize.curve_fit(gaussienne, x, array_max_x, p0=p0)
-    return params, covariance
+
+    # Extraction des profils de pixels
+    array_max_x = image_array[:, x_barycentre]
+    array_max_y = image_array[y_barycentre, :]
+
+    # Axes pour le fit
+    x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
+    y = np.linspace(0, len(array_max_y) - 1, len(array_max_y))
+
+    # Ajustement de la gaussienne
+    params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0=p0)
+    params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0=p0)
+
+    return params_x, params_y
+
+def tracer_profil_faisceau_avec_fit(nom_fichier):
+    chemin_image = os.path.join(dossier, nom_fichier)
+    image = Image.open(chemin_image).convert("L")
+    image_array = np.array(image, dtype=np.float64)
+
+    # Simuler les coordonnées du barycentre
+    bary_list = [image_array.shape[1] // 2, image_array.shape[0] // 2]
+    x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
+
+    # Extraction des profils
+    array_max_x = image_array[:, x_barycentre]
+    array_max_y = image_array[y_barycentre, :]
+
+    # Fit des données
+    params_x, params_y = fit_gaussien(nom_fichier, [1, 1, len(array_max_x)//2, 10])
+
+    # Axes pour le fit
+    x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
+    y = np.linspace(0, len(array_max_y) - 1, len(array_max_y))
+
+    # Tracer les profils et les fits
+    plt.figure(figsize=(10, 8))
+
+    # Profil selon x
+    plt.subplot(2, 1, 1)
+    plt.plot(x, array_max_x, label="Profil X", color='red')
+    plt.plot(x, gaussienne(x, *params_x), label="Fit Gaussien X", color='blue')
+    plt.title("Profil et Fit selon l'axe X")
+    plt.xlabel("Position")
+    plt.ylabel("Intensité")
+    plt.legend()
+
+    # Profil selon y
+    plt.subplot(2, 1, 2)
+    plt.plot(y, array_max_y, label="Profil Y", color='red')
+    plt.plot(y, gaussienne(y, *params_y), label="Fit Gaussien Y", color='blue')
+    plt.title("Profil et Fit selon l'axe Y")
+    plt.xlabel("Position")
+    plt.ylabel("Intensité")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
 
 
-print(fit_gaussien([1,1,0,1]))
-
+tracer_profil_faisceau_avec_fit('Profil1.tif')
