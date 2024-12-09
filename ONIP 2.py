@@ -184,7 +184,7 @@ def tracer_profil_faisceau(nom_fichier):
     
     array_max_x=image_array[:,x_barycentre]
     
-    array_max_y=image_array[ y_barycentre,:]
+    array_max_y=image_array[y_barycentre,:]
     
     x = np.linspace(0, len(array_max_x), len(array_max_x))
     plt.subplot(2, 1,1)
@@ -245,15 +245,15 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     image_array = np.array(image, dtype=np.float64)
 
     # Simuler les coordonnées du barycentre
-    bary_list = [image_array.shape[1] // 2, image_array.shape[0] // 2]
+    bary_list = get_bary_x_y(nom_fichier)
     x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
-
+    print(bary_list)
     # Extraction des profils
-    array_max_x = image_array[:, x_barycentre]
-    array_max_y = image_array[y_barycentre, :]
+    array_max_y = image_array[:, x_barycentre]
+    array_max_x = image_array[y_barycentre, :]
 
     # Fit des données
-    params_x, params_y = fit_gaussien(nom_fichier, [1, 1, len(array_max_x)//2, 10])
+    params_x, params_y = fit_gaussien(nom_fichier, [1, 1, len(array_max_x), 10])
 
     # Axes pour le fit
     x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
@@ -284,34 +284,55 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     plt.show()
 
 
-<<<<<<< HEAD
 tracer_profil_faisceau_avec_fit('Profil1.tif')
-=======
-print(fit_gaussien([1,1,0,1]))
 
 """Automatisation du processus"""
 
-for k in range 15 : 
-    Donnees={}
-    nom_fichier =f"Profil{k}.tif"
-    print get_bary_x_y(nom_fichier)
-    print get_max_min(nom_fichier)
-    print tracer_droites_bary(nom_fichier)
-    print tracer_profil_faisceau(nom_fichier)
-    print fit_gaussien(p0)
-    Donnees[Profil{k}]=[wx,wy]
+Donnees=[]
+for k in range (len(nom)) : 
     
-def rayon(w0,M,z,lambda):
-    r=w0*np.sqrt(1+((M*lambda*z)/(np.pi*w0**2))**2)
+    
+    #Donnees=np.zeros([len(nom),2])
+    nom_fichier =str(nom[k])
+    tracer_profil_faisceau_avec_fit(nom_fichier)
+    params_x,params_y=fit_gaussien(nom_fichier,p0)
+    Donnees.append([np.abs(params_x[3]),np.abs(params_y[3])])
+    p0=[int min, intmax-min, xbary, ecart type]
+    #Donnees[k,0],Donnees[k,1]=params_x[3],params_y[3]
+    donnees_array=np.array(Donnees)
+    # print(donnees_array)
+    
+    
+
+print(donnees_array)
+
+def rayon(w,M,z):
+    landa=1.3e-6
+    r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
     return r 
 
-z=np.linspace(0,100,1000) #La valeur donnée dans le document csv nous donnne l'emplacement de la fin du waist ?
-
-
-plt.plot(z, rayon(), label='rayon', color='b')
+x=np.linspace(0,15,15)
+plt.plot(x, donnees_array[:, 1], label='rayon', color='b')
 #plt.title('Graphique Sinus')
-plt.title('Rayon selon la position z')
-plt.ylabel('waist')
+plt.title('Intensité selon  laxe x')
+plt.ylabel('Intensité')
 plt.legend()
 plt.show()
->>>>>>> 3135ccc642382a5e1f39e773bd3181b1f60ad8df
+
+
+
+
+
+# plt.plot(z, rayon(1,2,3), label='rayon', color='b')
+# #plt.title('Graphique Sinus')
+# plt.title('Rayon selon la position z')
+# plt.ylabel('waist')
+# plt.legend()
+# plt.show()
+
+
+
+# print get_bary_x_y(nom_fichier)
+# print get_max_min(nom_fichier)
+# print tracer_droites_bary(nom_fichier)
+# print tracer_profil_faisceau(nom_fichier)
