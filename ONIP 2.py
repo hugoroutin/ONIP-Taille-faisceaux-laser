@@ -155,8 +155,8 @@ def tracer_droites_bary(nom_fichier):
     cv2.line(image_couleur, (0, y_barycentre), (largeur - 1, y_barycentre), couleur_ligne, epaisseur)
     
     # # Dessiner un cercle au barycentre
-    #maxmin=get_max_min(nom_fichier)
-    #cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
+    # maxmin=get_max_min(nom_fichier)
+    # cv2.circle(image_couleur, (x_barycentre, y_barycentre), 5, (0, 255, 0), -1)  # Vert pour le barycentre
     
     # Créer une copie de l'image originale en couleur pour la superposition
     image1 = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -168,7 +168,8 @@ def tracer_droites_bary(nom_fichier):
     cv2.waitKey(0)  # Attendre une touche pour fermer
     
     
-
+# for i in nom:
+#    tracer_droites_bary(i)
 #tracer_droites_bary('Profil2.tif')
 
 def tracer_profil_faisceau(nom_fichier):
@@ -232,8 +233,8 @@ def fit_gaussien(nom_fichier):
     # Axes pour le fit
     x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
     y = np.linspace(0, len(array_max_y) - 1, len(array_max_y))
-    p0x=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], get_bary_x_y(nom_fichier)[0] ,1]
-    p0y=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], get_bary_x_y(nom_fichier)[1] ,1]
+    p0x=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], x_barycentre ,300]
+    p0y=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], y_barycentre ,300]
     # Ajustement de la gaussienne
     params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0x)
     params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0y)
@@ -285,6 +286,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
 
     plt.tight_layout()
     plt.show()
+    return params_x, params_y
 
 
 tracer_profil_faisceau_avec_fit('Profil1.tif')
@@ -297,9 +299,9 @@ for k in range (len(nom)) :
     
     #Donnees=np.zeros([len(nom),2])
     nom_fichier =str(nom[k])
-    tracer_profil_faisceau_avec_fit(nom_fichier)
-    p0=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], 1,1]
-    params_x,params_y=fit_gaussien(nom_fichier)
+    
+    
+    params_x,params_y=tracer_profil_faisceau_avec_fit(nom_fichier)
     Donnees.append([np.abs(params_x[3]),np.abs(params_y[3])])
     
     #Donnees[k,0],Donnees[k,1]=params_x[3],params_y[3]
@@ -316,13 +318,14 @@ def rayon(w,M,z):
     return r 
 
 x=np.linspace(0,15,15)
-plt.plot(x, donnees_array[:, 1], label='rayon', color='b')
+plt.plot(x, donnees_array[:, 1], label='col 1', color='b')
+plt.plot(x, donnees_array[:, 0], label='col2', color='r')
 #plt.title('Graphique Sinus')
 plt.title('Intensité selon  laxe x')
 plt.ylabel('Intensité')
 plt.legend()
 plt.show()
-
+#
 
 
 
