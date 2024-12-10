@@ -216,13 +216,13 @@ def gaussienne(x, A, B, x0, omega):
     """
     return A + B * np.exp(-2 * ((x - x0)**2) / omega**2)
 
-def fit_gaussien(nom_fichier, p0):
+def fit_gaussien(nom_fichier):
     chemin_image = os.path.join(dossier, nom_fichier)
     image = Image.open(chemin_image).convert("L")
     image_array = np.array(image, dtype=np.float64)
 
     # Simuler les coordonnées du barycentre si get_bary_x_y est indisponible
-    bary_list = [image_array.shape[1] // 2, image_array.shape[0] // 2]
+    bary_list = get_bary_x_y(nom_fichier)
     x_barycentre, y_barycentre = int(bary_list[0]), int(bary_list[1])
 
     # Extraction des profils de pixels
@@ -232,11 +232,14 @@ def fit_gaussien(nom_fichier, p0):
     # Axes pour le fit
     x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
     y = np.linspace(0, len(array_max_y) - 1, len(array_max_y))
-
+    p0x=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], get_bary_x_y(nom_fichier)[0] ,1]
+    p0y=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], get_bary_x_y(nom_fichier)[1] ,1]
     # Ajustement de la gaussienne
-    params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0=p0)
-    params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0=p0)
-
+    params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0x)
+    params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0y)
+    
+    # params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0=params_x)
+    # params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0=params_y)
     return params_x, params_y
 
 def tracer_profil_faisceau_avec_fit(nom_fichier):
@@ -253,7 +256,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     array_max_x = image_array[y_barycentre, :]
 
     # Fit des données
-    params_x, params_y = fit_gaussien(nom_fichier, [1, 1, len(array_max_x), 10])
+    params_y,params_x  = fit_gaussien(nom_fichier)
 
     # Axes pour le fit
     x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
@@ -295,9 +298,10 @@ for k in range (len(nom)) :
     #Donnees=np.zeros([len(nom),2])
     nom_fichier =str(nom[k])
     tracer_profil_faisceau_avec_fit(nom_fichier)
-    params_x,params_y=fit_gaussien(nom_fichier,p0)
+    p0=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], 1,1]
+    params_x,params_y=fit_gaussien(nom_fichier)
     Donnees.append([np.abs(params_x[3]),np.abs(params_y[3])])
-    p0=[int min, intmax-min, xbary, ecart type]
+    
     #Donnees[k,0],Donnees[k,1]=params_x[3],params_y[3]
     donnees_array=np.array(Donnees)
     # print(donnees_array)
