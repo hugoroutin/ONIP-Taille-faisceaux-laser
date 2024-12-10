@@ -289,7 +289,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     return params_x, params_y
 
 
-tracer_profil_faisceau_avec_fit('Profil1.tif')
+#tracer_profil_faisceau_avec_fit('Profil1.tif')
 
 """Automatisation du processus"""
 
@@ -301,34 +301,45 @@ for k in range (len(nom)) :
     nom_fichier =str(nom[k])
     
     
-    params_x,params_y=tracer_profil_faisceau_avec_fit(nom_fichier)
+    params_x,params_y=fit_gaussien(nom_fichier)
     Donnees.append([np.abs(params_x[3]),np.abs(params_y[3])])
     
     #Donnees[k,0],Donnees[k,1]=params_x[3],params_y[3]
     donnees_array=np.array(Donnees)
     # print(donnees_array)
     
-    
 
-print(donnees_array)
+plt.plot(z, donnees_array[:, 1], label='selon x', color='b')
+plt.plot(z, donnees_array[:, 0], label='selon y', color='r')
 
-def rayon(w,M,z):
-    landa=1.3e-6
-    r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
-    return r 
-
-x=np.linspace(0,15,15)
-plt.plot(x, donnees_array[:, 1], label='col 1', color='b')
-plt.plot(x, donnees_array[:, 0], label='col2', color='r')
-#plt.title('Graphique Sinus')
-plt.title('Intensité selon  laxe x')
-plt.ylabel('Intensité')
+plt.title('Largeur du faisceau')
+plt.ylabel('largeur')
 plt.legend()
 plt.show()
+
+
+
+def rayon(z,w,M):
+    # z=np.linspace(0,15,15)
+    landa=1.3e-6
+    r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
+    print(r)
+    return r 
+print('bite')
+params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1], [80,1])
+params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0], [80,1])
 #
+print('bite')
+print(params_w_x[1])
+print(params_w_y[1])
 
-
-
+# plt.plot(z, [params_w_x[1]*15], label='selon x', color='b')
+# plt.plot(z, params_w_y[1], label='selon y', color='r')
+# #plt.title('Graphique Sinus')
+# plt.title('Largeur du faisceau')
+# plt.ylabel('Intensité')
+# plt.legend()
+# plt.show()
 
 # plt.plot(z, rayon(1,2,3), label='rayon', color='b')
 # #plt.title('Graphique Sinus')
