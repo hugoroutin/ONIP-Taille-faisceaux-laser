@@ -289,7 +289,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     return params_x, params_y
 
 
-#tracer_profil_faisceau_avec_fit('Profil1.tif')
+tracer_profil_faisceau_avec_fit('Profil1.tif')
 
 """Automatisation du processus"""
 
@@ -325,11 +325,11 @@ def rayon(z,w,M):
     r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
     print(r)
     return r 
-print('bite')
+
 params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1], [80,1])
 params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0], [80,1])
 #
-print('bite')
+
 print(params_w_x[1])
 print(params_w_y[1])
 
