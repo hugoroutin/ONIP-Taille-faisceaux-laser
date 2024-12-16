@@ -16,14 +16,14 @@ from scipy.optimize import curve_fit
 utilisateur='Ariane'
 utilisateur='Hugo'
 
-
+tp=4.65e-6
 
 z = []
 nom = []
 with open('data.csv', 'r') as f:
     reader = csv.reader(f , delimiter=',')
     for row in reader:
-        z = np.append(z,float(row[0]))
+        z = np.append(z,float(row[0])*1e-3)
         nom = np.append(nom,row[1])
 '''Ces lignes de codes ouvrent le fichier data.csv et viennent
  lire le fichier et ecrivent dans des liestes z et nom un atribut
@@ -191,14 +191,14 @@ def tracer_profil_faisceau(nom_fichier):
     plt.subplot(2, 1,1)
     plt.plot(x, array_max_x, label='Intensité selon laxe x', color='b')
     #plt.title('Graphique Sinus')
-    plt.title('Intensité selon  laxe x')
+    plt.title('Intensité selon  laxe x (pixels)')
     plt.ylabel('Intensité')
     plt.legend()
     #plt.show()
     
     y = np.linspace(0, len(array_max_y), len(array_max_y))
     plt.subplot(2,1,2)
-    plt.plot(y, array_max_y, label='Intensité selon laxe y', color='r')
+    plt.plot(y, array_max_y, label='Intensité selon laxe y (pixels)', color='r')
     plt.title('Intensité selon  laxe y')
     
     plt.ylabel('Intensité')
@@ -208,6 +208,8 @@ def tracer_profil_faisceau(nom_fichier):
     plt.show()
 
 
+# omega_si=omega*4.65E-6
+# x0_si=x0*4.65E-6 
 
 
 
@@ -215,7 +217,7 @@ def gaussienne(x, A, B, x0, omega):
     """
     Fonction gaussienne adaptée au traçage.
     """
-    return A + B * np.exp(-2 * ((x - x0)**2) / omega**2)
+    return A + B * np.exp(-2 * (((x - x0)*4.65e-6)**2) / (omega*4.65e-6)**2)
 
 def fit_gaussien(nom_fichier):
     chemin_image = os.path.join(dossier, nom_fichier)
@@ -241,6 +243,9 @@ def fit_gaussien(nom_fichier):
     
     # params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0=params_x)
     # params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0=params_y)
+    
+    params_x = params_x * 4.65e-6
+    params_y = params_y * 4.65e-6
     return params_x, params_y
 
 def tracer_profil_faisceau_avec_fit(nom_fichier):
@@ -269,7 +274,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     # Profil selon x
     plt.subplot(2, 1, 1)
     plt.plot(x, array_max_x, label="Profil X", color='red')
-    plt.plot(x, gaussienne(x, *params_x), label="Fit Gaussien X", color='blue')
+    plt.plot(x, gaussienne(x, *params_x/tp), label="Fit Gaussien X", color='blue')
     plt.title("Profil et Fit selon l'axe X")
     plt.xlabel("Position")
     plt.ylabel("Intensité")
@@ -278,7 +283,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     # Profil selon y
     plt.subplot(2, 1, 2)
     plt.plot(y, array_max_y, label="Profil Y", color='red')
-    plt.plot(y, gaussienne(y, *params_y), label="Fit Gaussien Y", color='blue')
+    plt.plot(y, gaussienne(y, *params_y/tp), label="Fit Gaussien Y", color='blue')
     plt.title("Profil et Fit selon l'axe Y")
     plt.xlabel("Position")
     plt.ylabel("Intensité")
@@ -307,50 +312,48 @@ for k in range (len(nom)) :
     #Donnees[k,0],Donnees[k,1]=params_x[3],params_y[3]
     donnees_array=np.array(Donnees)
     # print(donnees_array)
+    tracer_profil_faisceau_avec_fit(nom_fichier)
+# def rayon(z,w,M):
+#     landa=1.3e-6
+#     r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
     
+#     return r 
 
-plt.plot(z, donnees_array[:, 1], label='selon x', color='b')
-plt.plot(z, donnees_array[:, 0], label='selon y', color='r')
+
+def rayon(z, omega_0, M):
+    """
+    Calcule le rayon en fonction des paramètres donnés.
+
+    :param omega_0: Rayon initial (float)
+    :param z: Variable indépendante liée à la position (float)
+    :param M: Variable indépendante supplémentaire (float)
+    :param lambda_val: Longueur d'onde (float)
+    :return: Rayon calculé (float)
+    """
+    lambda_val=1.3e-6
+    facteur = (z * M * lambda_val) / (np.pi * (omega_0*4.65e-6)**2)
+    return (omega_0*4.65e-6) * np.sqrt(1 + facteur**2)
+
+
+
+initial_guess=[0.0005,1.25]
+find_units=1
+params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1]*find_units, initial_guess)
+params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0]*find_units, initial_guess)
+
+plt.plot(z, donnees_array[:, 1]*find_units, label='selon x', color='b')
+plt.plot(z, donnees_array[:, 0]*find_units, label='selon y', color='r')
+plt.plot(z, rayon(z, *params_w_y), label="Fit Y", color='pink')
+#plt.plot(z, rayon(z, *initial_guess), label='selon y', color='r')
 
 plt.title('Largeur du faisceau')
 plt.ylabel('largeur')
 plt.legend()
 plt.show()
 
-
-
-def rayon(z,w,M):
-    # z=np.linspace(0,15,15)
-    landa=1.3e-6
-    r=w*np.sqrt(1+((M*landa*z)/(np.pi*w**2))**2)
-    print(r)
-    return r 
-
-params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1], [80,1])
-params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0], [80,1])
-#
-
-print(params_w_x[1])
-print(params_w_y[1])
-
-# plt.plot(z, [params_w_x[1]*15], label='selon x', color='b')
-# plt.plot(z, params_w_y[1], label='selon y', color='r')
-# #plt.title('Graphique Sinus')
-# plt.title('Largeur du faisceau')
-# plt.ylabel('Intensité')
-# plt.legend()
-# plt.show()
-
-# plt.plot(z, rayon(1,2,3), label='rayon', color='b')
-# #plt.title('Graphique Sinus')
-# plt.title('Rayon selon la position z')
-# plt.ylabel('waist')
-# plt.legend()
-# plt.show()
+print('M² selon x =', params_w_x[1])
+print('M² selon y =',params_w_y[1])
 
 
 
-# print get_bary_x_y(nom_fichier)
-# print get_max_min(nom_fichier)
-# print tracer_droites_bary(nom_fichier)
-# print tracer_profil_faisceau(nom_fichier)
+
