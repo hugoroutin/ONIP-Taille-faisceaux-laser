@@ -276,7 +276,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     plt.plot(x, array_max_x, label="Profil X", color='red')
     plt.plot(x, gaussienne(x, *params_x/tp), label="Fit Gaussien X", color='blue')
     plt.title("Profil et Fit selon l'axe X")
-    plt.xlabel("Position")
+    plt.xlabel("Position en pixels")
     plt.ylabel("Intensité")
     plt.legend()
 
@@ -285,7 +285,7 @@ def tracer_profil_faisceau_avec_fit(nom_fichier):
     plt.plot(y, array_max_y, label="Profil Y", color='red')
     plt.plot(y, gaussienne(y, *params_y/tp), label="Fit Gaussien Y", color='blue')
     plt.title("Profil et Fit selon l'axe Y")
-    plt.xlabel("Position")
+    plt.xlabel("Position en pixels")
     plt.ylabel("Intensité")
     plt.legend()
 
@@ -341,13 +341,15 @@ find_units=1
 params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1]*find_units, initial_guess)
 params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0]*find_units, initial_guess)
 
+plt.figure(figsize=(10, 5))
 plt.plot(z, donnees_array[:, 1]*find_units, label='selon x', color='b')
 plt.plot(z, donnees_array[:, 0]*find_units, label='selon y', color='r')
 plt.plot(z, rayon(z, *params_w_y), label="Fit Y", color='pink')
 #plt.plot(z, rayon(z, *initial_guess), label='selon y', color='r')
 
-plt.title('Largeur du faisceau')
-plt.ylabel('largeur')
+plt.title('Largeur du faisceau en fonction de la position de mesure')
+plt.ylabel('Largeur du faisceau (mm)')
+plt.xlabel('Position (mm)')
 plt.legend()
 plt.show()
 
