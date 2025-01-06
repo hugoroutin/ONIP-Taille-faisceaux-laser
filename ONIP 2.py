@@ -93,7 +93,7 @@ def get_bary_x_y(nom_fichier):
         raise ValueError("Le barycentre est indéfini.")
     
     # Calculer les coordonnées du barycentre
-    x_barycentre = np.sum(x_indices * image_array) / somme_intensites
+    x_barycentre = np.sum(x_indices * image_array) / somme_intensites #moyenne pondéree
     y_barycentre = np.sum(y_indices * image_array) / somme_intensites
     
     return [x_barycentre, y_barycentre]
@@ -235,8 +235,8 @@ def fit_gaussien(nom_fichier):
     # Axes pour le fit
     x = np.linspace(0, len(array_max_x) - 1, len(array_max_x))
     y = np.linspace(0, len(array_max_y) - 1, len(array_max_y))
-    p0x=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], x_barycentre ,300]
-    p0y=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], y_barycentre ,300]
+    p0x=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], x_barycentre ,300] #initial guess selon p0x
+    p0y=[get_max_min(nom_fichier)[1] ,get_max_min(nom_fichier)[0]-get_max_min(nom_fichier)[1], y_barycentre ,300] #initial guess selon p0y
     # Ajustement de la gaussienne
     params_x, covariance_x = curve_fit(gaussienne, x, array_max_x, p0x)
     params_y, covariance_y = curve_fit(gaussienne, y, array_max_y, p0y)
@@ -338,8 +338,8 @@ def rayon(z, omega_0, M):
 
 initial_guess=[0.0005,1.25]
 find_units=1
-params_w_x, ballec=curve_fit(rayon, z, donnees_array[:, 1]*find_units, initial_guess)
-params_w_y, ballec=curve_fit(rayon, z, donnees_array[:, 0]*find_units, initial_guess)
+params_w_x, covx=curve_fit(rayon, z, donnees_array[:, 1]*find_units, initial_guess)
+params_w_y, covy=curve_fit(rayon, z, donnees_array[:, 0]*find_units, initial_guess)
 
 plt.figure(figsize=(10, 5))
 plt.plot(z, donnees_array[:, 1]*find_units, label='selon x', color='b')
