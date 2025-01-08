@@ -170,7 +170,7 @@ def tracer_droites_bary(nom_fichier):
     
 # for i in nom:
 #    tracer_droites_bary(i)
-#tracer_droites_bary('Profil2.tif')
+tracer_droites_bary('Profil2.tif')
 
 def tracer_profil_faisceau(nom_fichier):
     chemin_image=os.path.join(dossier, nom_fichier)
@@ -193,6 +193,7 @@ def tracer_profil_faisceau(nom_fichier):
     #plt.title('Graphique Sinus')
     plt.title('Intensité selon  laxe x (pixels)')
     plt.ylabel('Intensité')
+    plt.xlabel('Position sur l axe x (pixel)')
     plt.legend()
     #plt.show()
     
@@ -202,6 +203,7 @@ def tracer_profil_faisceau(nom_fichier):
     plt.title('Intensité selon  laxe y')
     
     plt.ylabel('Intensité')
+    plt.xlabel('Position sur l axe x (pixels)')
     plt.legend()
     plt.tight_layout()
 
@@ -210,7 +212,7 @@ def tracer_profil_faisceau(nom_fichier):
 
 # omega_si=omega*4.65E-6
 # x0_si=x0*4.65E-6 
-
+tracer_profil_faisceau('profil1.tif')
 
 
 def gaussienne(x, A, B, x0, omega):
@@ -355,6 +357,9 @@ plt.show()
 
 print('M² selon x =', params_w_x[1])
 print('M² selon y =',params_w_y[1])
+
+print('w0 selon x =', params_w_x[0])
+print('w0 selon y =',params_w_y[0])
 
 
 
